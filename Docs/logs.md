@@ -72,4 +72,125 @@ N body/
 - Verify camera controls work properly
 - Begin Phase 1: Foundation
 
+---
+
+## December 5, 2025
+
+### Dependency Migration & Build System Fixes
+
+**Problem Identification:**
+- Had mixed local GLAD files (include/glad, include/KHR, src/glad.c) and vcpkg packages
+- Build errors due to missing `glad.c` file
+- CMake couldn't find packages when running from terminal (toolchain file issue)
+
+**GLAD Migration to vcpkg:**
+- Installed GLAD via vcpkg: `glad:x64-windows`
+- Removed local GLAD files:
+  - Deleted `include/glad/` folder
+  - Deleted `include/KHR/` folder
+  - Removed `src/glad.c` from project
+- Updated CMakeLists.txt to use `find_package(glad CONFIG REQUIRED)`
+- Added `glad::glad` to `target_link_libraries`
+
+**vcpkg Package Verification:**
+- Confirmed installed packages via `vcpkg list`:
+  - `glad:x64-windows` ✅
+  - `glfw3:x64-windows` ✅
+  - `glm:x64-windows` ✅
+  - `opengl:x64-windows` ✅
+
+**CMake Configuration Understanding:**
+- Learned `.vscode/settings.json` already configured with:
+  ```json
+  "cmake.configureSettings": {
+      "CMAKE_TOOLCHAIN_FILE": "C:/Users/ROHAN/vcpkg/scripts/buildsystems/vcpkg.cmake"
+  }
+  ```
+- Understood `CMAKE_TOOLCHAIN_FILE` purpose:
+  - Points to vcpkg's auto-generated configuration script
+  - Tells CMake where to find vcpkg packages
+  - Sets up include paths, library paths, and search locations
+  - Not just a directory path, but a complete build environment configuration
+  - vcpkg.cmake is auto-generated during vcpkg bootstrap (not manually written)
+
+**Shader Path Resolution:**
+- Issue: Shaders not found when running executable
+- Problem: Executable looks for shaders relative to its location (build/Debug/)
+- Solution: Updated CMakeLists.txt with `add_custom_command`:
+  ```cmake
+  add_custom_command(TARGET NBodySimulation POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+          ${CMAKE_SOURCE_DIR}/shaders
+          $<TARGET_FILE_DIR:NBodySimulation>/shaders
+  )
+  ```
+- This automatically copies shaders to executable directory during build
+
+**Testing & Verification:**
+- Created `src/self.cpp` (working galaxy simulation code)
+- Tested build system by temporarily switching to `self.cpp` in CMakeLists.txt
+- Successfully built and ran - confirmed all dependencies working:
+  - Window creation ✅
+  - OpenGL rendering ✅
+  - GLFW input ✅
+  - GLM math ✅
+  - GLAD loader ✅
+  - Shader loading ✅
+- Switched back to `src/main.cpp` for Phase 1 implementation
+
+**Build Commands Used:**
+```bash
+# Using VS Code CMake Tools (recommended):
+Ctrl+Shift+P → "CMake: Delete Cache and Reconfigure"
+Ctrl+Shift+P → "CMake: Build"
+Shift+F5 → Run without debugging
+
+# Or terminal with toolchain file:
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:/Users/ROHAN/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build .
+```
+
+**Final Working Project Structure:**
+```
+N body/
+├── src/
+│   ├── main.cpp (Phase 1 tutorial code - to be implemented)
+│   └── self.cpp (working galaxy simulation)
+├── shaders/
+│   ├── particle.vert (updated with distance-based point size)
+│   └── particle.frag (Gaussian glow shader)
+├── include/ (empty - vcpkg handles all headers)
+├── .vscode/
+│   └── settings.json (vcpkg toolchain configured)
+├── CMakeLists.txt (clean, vcpkg-only dependencies)
+└── build/ (auto-generated, in .gitignore)
+```
+
+**Key Learnings:**
+- vcpkg handles all header and library files - no manual copying needed
+- Always use CMake Tools in VS Code or specify toolchain file in terminal
+- Shader files need explicit copy command in CMakeLists.txt
+- Can test build system with different source files by changing `add_executable()`
+- `CMAKE_TOOLCHAIN_FILE` is a configuration script, not just a path
+
+**vcpkg Setup for Other PCs:**
+1. Clone and bootstrap vcpkg
+2. Install packages: `vcpkg install glfw3:x64-windows glm:x64-windows glad:x64-windows`
+3. Run `vcpkg integrate install`
+4. Update `.vscode/settings.json` with correct vcpkg path
+5. Project builds immediately with no additional setup
+
+**Status:**
+- ✅ All dependencies installed via vcpkg
+- ✅ Build system fully functional
+- ✅ Shader loading working
+- ✅ Test simulation runs successfully
+- 🎯 Ready to implement Phase 1: 100 particle foundation with camera controls
+
+**Next Steps:**
+- Implement `src/main.cpp` with Phase 1 code (100 particles, basic rendering, camera)
+- Test all controls (WASD movement, mouse look, Space/Shift vertical)
+- Verify particle rendering and colors
+- Move to Phase 2: Basic physics simulation
+
 
