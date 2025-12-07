@@ -1,4 +1,3 @@
-# Current phase review
 ┌─────────────────────────────────────────────────────────────┐
 │                         MAIN FLOW                            │
 └─────────────────────────────────────────────────────────────┘
@@ -54,11 +53,31 @@
    ├─ Delete shader program
    └─ Terminate GLFW
 
+   CPU Side                     GPU Side
+────────                     ────────
 
-# To build 
-cd "C:\Users\ROHAN\Documents\coding\N body"
-& "C:\Program Files\CMake\bin\cmake.exe" --build ".\build" --config Debug -j 8 --
-
-
-# To run 
-& ".\build\Debug\test_build.exe"
+Particle Struct
+  ├─ position (vec3)
+  └─ color (vec3)
+       │
+       │ glBufferData()
+       ▼
+   VBO (GPU memory)
+       │
+       │ glVertexAttribPointer()
+       ▼
+   VAO (describes layout)
+       │
+       │ glDrawArrays(GL_POINTS)
+       ▼
+   Vertex Shader
+       │ transforms position
+       │ passes color through
+       ▼
+   Rasterizer (creates point sprites)
+       ▼
+   Fragment Shader
+       │ makes points circular
+       │ applies color
+       ▼
+   Framebuffer → Screen
