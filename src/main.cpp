@@ -47,6 +47,35 @@ bool firstMouse = true; // initially set to true since we havent moved the mouse
 float deltaTime = 0.0f; // time passed between current frame and last frame
 float lastFrame = 0.0f; // time of last frame
 
+struct particle{
+    glm::vec3 position; // xyz float coordinates
+    glm::vec3 color; // RGB color 
+    // Note: This struct is tightly packed and matches the layout
+    // we'll tell OpenGL about in glVertexAttribPointer()
+    // 
+    // Memory layout:
+    // [position.x][position.y][position.z][color.r][color.g][color.b]
+    //  <- 12 bytes (3 floats) -> <- 12 bytes (3 floats) ->
+    //  Total: 24 bytes per particle
+};
+// ═══════════════════════════════════════════════════════════
+// FUNCTION PROTOTYPES (declarations - implementations below)
+// ═══════════════════════════════════════════════════════════
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height); // callback (called when window is resized)
+void mouse_callback(GLFWwindow* window, double xpos, double ypos); // callback (called when mouse is moved)
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset); // optional callback if we decide to implement scrollwheel
+void processInput(GLFWwindow *window); // process keyboard input
+
+std::string loadShaderSource(const char* filePath); // load shader source code from file
+
+GLuint compileShader(const char* source, GLenum shaderType); // compile a shader of given type from source code
+
+GLuint createShaderProgram(const char* vertexSource, const char* fragmentSource); // create shader program from vertex and fragment shader source code
+
+std:: vector<particle> generateParticles(int count); // generate 'count' number of particles with random positions and colors
+
+
 int main() {
     // Initialize GLFW
     if (!glfwInit()) {
